@@ -49,40 +49,49 @@ jobs:
           资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/
           EOF
           
-          # 新增郴州台，请求接口，增加 -f -L，失败就报错退出
-          curl -s -f -L "https://mapi.ngcz.tv/api/v1/channel.php" -o cz.json
+          # 新增郴州台
+          # 浏览器UA伪装
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+          
+          # 请求api，带上浏览器UA，不落地文件，管道直接传给jq
+          PLAYLIST_URL=$(curl -s -f -L --connect-timeout 15 -A "$UA" "https://mapi.ngcz.tv/api/v1/channel.php" | jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8')
+          
           CURL_EXIT=$?
           if [ $CURL_EXIT -ne 0 ];then
-            echo "❌ 请求 mapi.ngcz.tv 接口失败，跳过郴州频道"
-            rm -f cz.json temp_playlist.m3u8
+            echo "❌ 请求mapi.ngcz.tv接口网络失败，跳过郴州新闻频道"
           else
-            # 文件存在且不为空才继续执行jq
-            if [ -s cz.json ]; then
-              PLAYLIST_URL=$(jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8' cz.json)
-              echo "获取到playlist地址: $PLAYLIST_URL"
+            if [ -z "$PLAYLIST_URL" ] || [ "$PLAYLIST_URL" = "null" ]; then
+              echo "⚠️ json未匹配到郴州新闻频道，跳过"
+            else
+              BASE_PREFIX="https://live.ngcz.tv/aczxw/"
+              echo "域名前缀: $BASE_PREFIX"
           
-              if [ -z "$PLAYLIST_URL" ] || [ "$PLAYLIST_URL" = "null" ]; then
-                echo "⚠️ 未获取到郴州新闻频道playlist，跳过该频道"
+              # 请求playlist.m3u8，带上浏览器UA，同时捕获http状态码
+              curl -s -f -L -A "$UA" --connect-timeout 15 -w "%{http_code}" "$PLAYLIST_URL" > temp_playlist.m3u8
+              HTTP_CODE=$(tail -n1 temp_playlist.m3u8)
+              # 剥离末尾输出的状态码，前面是响应body
+              RESP_BODY=$(sed '$ d' temp_playlist.m3u8)
+          
+              if [ "$HTTP_CODE" != "200" ]; then
+                echo "⚠️ playlist请求返回HTTP $HTTP_CODE 被403拦截，跳过郴州新闻频道"
               else
-                BASE_PREFIX="https://live.ngcz.tv/aczxw/"
-                echo "域名前缀: $BASE_PREFIX"
-          
-                curl -s "$PLAYLIST_URL" > temp_playlist.m3u8
+                echo "$RESP_BODY" > temp_playlist.m3u8
                 REAL_REL_URL=$(tail -n1 temp_playlist.m3u8)
                 echo "m3u8内相对路径: $REAL_REL_URL"
           
-                FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
-                echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
-          
-                echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                # 判断返回内容是否是m3u8（以#开头），防止拿到html报错页
+                if [[ "$REAL_REL_URL" == \#* ]];then
+                  echo "⚠️ 返回内容不是有效m3u8，跳过"
+                else
+                  FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
+                  echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
+                  echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                fi
               fi
-            else
-              echo "⚠️ cz.json 文件为空，跳过郴州频道"
             fi
           fi
-          
-          #清理临时文件
-          rm -f cz.json temp_playlist.m3u8
+          rm -f temp_playlist.m3u8
+
 
           # ========== 第三步：追加分类头 + 把动态获取的CHC写入 ==========
           echo "" >> yifa.txt
