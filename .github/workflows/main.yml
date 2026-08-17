@@ -49,28 +49,40 @@ jobs:
           资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/
           EOF
           
-          PLAYLIST_URL=$(jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8' cz.json)
-          echo "获取到playlist地址: $PLAYLIST_URL"
-
-          # 直接硬编码固定前缀，替代sed正则截取
-          BASE_PREFIX="https://live.ngcz.tv/aczxw/"
-          echo "域名前缀: $BASE_PREFIX"
-
-          # curl获取playlist m3u8内容，取最后一行（真实分片相对路径）
-          curl -s "$PLAYLIST_URL" > temp_playlist.m3u8
-          REAL_REL_URL=$(tail -n1 temp_playlist.m3u8)
-          echo "m3u8内相对路径: $REAL_REL_URL"
-
-          # 拼接完整最终播放地址
-          FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
-          echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
-
-          # 写入到播放列表 yifa.txt
-          echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
-
-          #清理全部临时文件
-          rm -f chc.tmp tmp cz.json temp_playlist.m3u8
-
+          # 新增郴州台，请求接口，增加 -f -L，失败就报错退出
+          curl -s -f -L "https://mapi.ngcz.tv/api/v1/channel.php" -o cz.json
+          CURL_EXIT=$?
+          if [ $CURL_EXIT -ne 0 ];then
+            echo "❌ 请求 mapi.ngcz.tv 接口失败，跳过郴州频道"
+            rm -f cz.json temp_playlist.m3u8
+          else
+            # 文件存在且不为空才继续执行jq
+            if [ -s cz.json ]; then
+              PLAYLIST_URL=$(jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8' cz.json)
+              echo "获取到playlist地址: $PLAYLIST_URL"
+          
+              if [ -z "$PLAYLIST_URL" ] || [ "$PLAYLIST_URL" = "null" ]; then
+                echo "⚠️ 未获取到郴州新闻频道playlist，跳过该频道"
+              else
+                BASE_PREFIX="https://live.ngcz.tv/aczxw/"
+                echo "域名前缀: $BASE_PREFIX"
+          
+                curl -s "$PLAYLIST_URL" > temp_playlist.m3u8
+                REAL_REL_URL=$(tail -n1 temp_playlist.m3u8)
+                echo "m3u8内相对路径: $REAL_REL_URL"
+          
+                FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
+                echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
+          
+                echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
+              fi
+            else
+              echo "⚠️ cz.json 文件为空，跳过郴州频道"
+            fi
+          fi
+          
+          #清理临时文件
+          rm -f cz.json temp_playlist.m3u8
 
           # ========== 第三步：追加分类头 + 把动态获取的CHC写入 ==========
           echo "" >> yifa.txt
