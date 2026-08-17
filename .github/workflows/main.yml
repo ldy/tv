@@ -86,6 +86,8 @@ jobs:
                   FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
                   echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
                   echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                  # 有bug，资兴台设置了Referer，导致郴州台也会有，手动置空
+                  echo "|Referer=" >> yifa.txt
                 fi
               fi
             fi
