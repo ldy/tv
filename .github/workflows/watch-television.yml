@@ -1,0 +1,179 @@
+name: 更新live.264788.xyz列表
+
+on:
+  schedule:
+    # 北京时间 07:00 ｜ UTC 23:00（前一天晚上）
+    - cron: '0 23 * * *'
+    # 北京时间 12:00 ｜ UTC 04:00
+    - cron: '0 4 * * *'
+    # 北京时间 17:00 ｜ UTC 08:00
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+# 授予完整的写入权限
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  create-and-update-file:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 步骤1：检出仓库
+      - name: 1️⃣ 检出仓库代码
+        uses: actions/checkout@v4
+      
+      # 步骤2：创建并写入文件
+      - name: 2️⃣ 创建/更新文件
+        run: |
+          echo "开始下载播放列表内容..."
+          
+          # 下载文件内容
+          curl -L -f "https://live.264788.xyz/sub/02Rs7gSs8uOpoqmE5q4cFvcsWdHFhI/txt" > yifa.txt
+          echo "下载完成"
+
+          # 动态提取3条CHC频道
+          # 提取三条保存到临时文件chc.tmp
+          grep -E '^(CHC|凤凰卫视)' yifa.txt > chc.tmp
+
+          echo "提取到的指定频道："
+          cat chc.tmp
+
+          # 截断文件，删除xxx以及后面所有内容
+          PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | head -n1 | cut -d: -f1)
+          echo $PAY_LINE
+          if [ -n "$PAY_LINE" ]; then
+            head -n $((PAY_LINE - 1)) yifa.txt > tmp && mv tmp yifa.txt
+          fi
+
+          # 追加湖南分类以及对应频道
+          cat >> yifa.txt <<'EOF'
+          
+          湖南,#genre#
+          湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/dWlwPTEyNy4wLjAuMSZ1aWQ9cWluZy1jbXMmbm5fdGltZXpvbmU9OCZjZG5leF9pZD1hbF9obHNfbGR2dCZ1dWlkPTliODY4NmU5ZTM2YzYwMmMmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
+          湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/Y2RuZXhfaWQ9YWxfaGxzX2xkdnQmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
+          EOF
+          
+          # 新增郴州台
+          # 浏览器UA伪装
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+          
+          # 请求api，带上浏览器UA，不落地文件，管道直接传给jq，解析json取出地址
+          PLAYLIST_URL=$(curl -s -f -L --connect-timeout 15 -A "$UA" "https://mapi.ngcz.tv/api/v1/channel.php" | jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8')
+          
+          CURL_EXIT=$?
+          if [ $CURL_EXIT -ne 0 ];then
+            echo "❌ 请求mapi.ngcz.tv接口网络失败，跳过郴州新闻频道"
+          else
+            if [ -z "$PLAYLIST_URL" ] || [ "$PLAYLIST_URL" = "null" ]; then
+              echo "⚠️ json未匹配到郴州新闻频道，跳过"
+            else
+              BASE_PREFIX="https://live.ngcz.tv/aczxw/"
+              echo "域名前缀: $BASE_PREFIX"
+          
+              # 请求playlist.m3u8，带上浏览器UA，同时捕获http状态码
+              curl -s -f -L -A "$UA" --connect-timeout 15 -w "%{http_code}" "$PLAYLIST_URL" > temp_playlist.m3u8
+              HTTP_CODE=$(tail -n1 temp_playlist.m3u8)
+              # 剥离末尾输出的状态码，前面是响应body
+              RESP_BODY=$(sed '$ d' temp_playlist.m3u8)
+          
+              if [ "$HTTP_CODE" != "200" ]; then
+                echo "⚠️ playlist请求返回HTTP $HTTP_CODE 被403拦截，跳过郴州新闻频道"
+              else
+                echo "$RESP_BODY" > temp_playlist.m3u8
+                REAL_REL_URL=$(tail -n1 temp_playlist.m3u8)
+                echo "m3u8内相对路径: $REAL_REL_URL"
+          
+                # 判断返回内容是否是m3u8（以#开头），防止拿到html报错页
+                if [[ "$REAL_REL_URL" == \#* ]];then
+                  echo "⚠️ 返回内容不是有效m3u8，跳过"
+                else
+                  FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
+                  echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
+                  echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                  # echo -n "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                  # 有bug，资兴台设置了Referer，导致郴州台也会有，手动置空
+                  # echo "|Referer=" >> yifa.txt
+                fi
+              fi
+            fi
+          fi
+          rm -f temp_playlist.m3u8
+
+          # 新增资兴台
+          echo "资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/"  >> yifa.txt
+
+          # 追加分类头 + 把动态获取的CHC写入
+          echo "" >> yifa.txt
+          echo "其他,#genre#" >> yifa.txt
+          cat chc.tmp >> yifa.txt
+
+          # 删除临时文件
+          rm -f chc.tmp tmp
+          
+          # 验证文件是否成功创建
+          if [ -f "yifa.txt" ]; then
+            echo "✅ 文件 yifa.txt 已成功创建"
+            echo "文件大小: $(wc -l < yifa.txt) 行"
+            echo "文件内容预览:"
+            head -n 3 yifa.txt
+          else
+            echo "❌ 文件创建失败"
+            exit 1
+          fi
+      
+      # 步骤3：强制推送文件到仓库
+      - name: 3️⃣ 强制推送文件到仓库
+        run: |
+          # 配置git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 显示当前状态
+          echo "当前目录内容:"
+          ls -la
+          
+          # 确保yifa.txt存在
+          if [ ! -f "yifa.txt" ]; then
+            echo "❌ 错误: yifa.txt 不存在"
+            exit 1
+          fi
+          
+          # 添加文件到git
+          git add yifa.txt -f
+          
+          # 检查是否有变化需要提交
+          if git diff --staged --quiet; then
+            echo "文件内容没有变化，跳过提交"
+          else
+            # 提交更改
+            git commit -m "更新播放列表文件 - $(date +'%Y-%m-%d %H:%M:%S')"
+            
+            # 获取当前分支名
+            BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+            echo "当前分支: $BRANCH_NAME"
+            
+            # 拉取最新更改并推送
+            git pull origin $BRANCH_NAME --rebase
+            git push origin $BRANCH_NAME
+            
+            echo "✅ 文件已成功推送到仓库！"
+          fi
+      
+      # 步骤4：验证文件是否在仓库中
+      - name: 4️⃣ 验证文件存在
+        run: |
+          echo "等待几秒钟让文件同步..."
+          sleep 5
+          
+          echo "检查仓库中的文件:"
+          if [ -f "yifa.txt" ]; then
+            echo "✅ 确认: yifa.txt 存在于工作目录"
+            echo "文件位置: $(pwd)/yifa.txt"
+            echo "文件内容前5行:"
+            head -n 5 yifa.txt
+          else
+            echo "❌ 警告: 在目录中找不到 yifa.txt"
+            exit 1
+          fi
