@@ -1,4 +1,4 @@
-name: 更新live.264788.xyz列表
+name: 更新watch-television列表
 
 on:
   schedule:
@@ -30,25 +30,25 @@ jobs:
           echo "开始下载播放列表内容..."
           
           # 下载文件内容
-          curl -L -f "https://live.264788.xyz/sub/02Rs7gSs8uOpoqmE5q4cFvcsWdHFhI/txt" > yifa.txt
+          curl -L -f "https://gitee.com/szwxk/watch-television/raw/master/wxk.m3u" > tv2.txt
           echo "下载完成"
 
-          # 动态提取3条CHC频道
-          # 提取三条保存到临时文件chc.tmp
-          grep -E '^(CHC|凤凰卫视)' yifa.txt > chc.tmp
+          # 动态提取指定频道
+          # 提取三条保存到临时文件special.txt
+          grep -E '^(CHC|凤凰|香港|环球)' tv2.txt > special.txt
 
           echo "提取到的指定频道："
-          cat chc.tmp
+          cat special.txt
 
           # 截断文件，删除xxx以及后面所有内容
-          PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | head -n1 | cut -d: -f1)
+          PAY_LINE=$(grep -n '苏浙皖,#genre#' tv2.txt | head -n1 | cut -d: -f1)
           echo $PAY_LINE
           if [ -n "$PAY_LINE" ]; then
-            head -n $((PAY_LINE - 1)) yifa.txt > tmp && mv tmp yifa.txt
+            head -n $((PAY_LINE - 1)) tv2.txt > tmp.txt && mv tmp.txt tv2.txt
           fi
 
           # 追加湖南分类以及对应频道
-          cat >> yifa.txt <<'EOF'
+          cat >> tv2.txt <<'EOF'
           
           湖南,#genre#
           湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/dWlwPTEyNy4wLjAuMSZ1aWQ9cWluZy1jbXMmbm5fdGltZXpvbmU9OCZjZG5leF9pZD1hbF9obHNfbGR2dCZ1dWlkPTliODY4NmU5ZTM2YzYwMmMmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
@@ -91,10 +91,10 @@ jobs:
                 else
                   FINAL_URL="${BASE_PREFIX}${REAL_REL_URL}"
                   echo "✅ 郴州新闻频道最终完整源: $FINAL_URL"
-                  echo "郴州新闻频道,$FINAL_URL" >> yifa.txt
-                  # echo -n "郴州新闻频道,$FINAL_URL" >> yifa.txt
+                  echo "郴州新闻频道,$FINAL_URL" >> tv2.txt
+                  # echo -n "郴州新闻频道,$FINAL_URL" >> tv2.txt
                   # 有bug，资兴台设置了Referer，导致郴州台也会有，手动置空
-                  # echo "|Referer=" >> yifa.txt
+                  # echo "|Referer=" >> tv2.txt
                 fi
               fi
             fi
@@ -102,22 +102,22 @@ jobs:
           rm -f temp_playlist.m3u8
 
           # 新增资兴台
-          echo "资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/"  >> yifa.txt
+          echo "资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/"  >> tv2.txt
 
-          # 追加分类头 + 把动态获取的CHC写入
-          echo "" >> yifa.txt
-          echo "其他,#genre#" >> yifa.txt
-          cat chc.tmp >> yifa.txt
+          # 追加分类头 + 把动态获取的指定频道写入
+          echo "" >> tv2.txt
+          echo "其他,#genre#" >> tv2.txt
+          cat special.txt >> tv2.txt
 
           # 删除临时文件
-          rm -f chc.tmp tmp
+          rm -f special.txt tmp.txt
           
           # 验证文件是否成功创建
-          if [ -f "yifa.txt" ]; then
-            echo "✅ 文件 yifa.txt 已成功创建"
-            echo "文件大小: $(wc -l < yifa.txt) 行"
+          if [ -f "tv2.txt" ]; then
+            echo "✅ 文件 tv2.txt 已成功创建"
+            echo "文件大小: $(wc -l < tv2.txt) 行"
             echo "文件内容预览:"
-            head -n 3 yifa.txt
+            head -n 3 tv2.txt
           else
             echo "❌ 文件创建失败"
             exit 1
@@ -134,14 +134,14 @@ jobs:
           echo "当前目录内容:"
           ls -la
           
-          # 确保yifa.txt存在
-          if [ ! -f "yifa.txt" ]; then
-            echo "❌ 错误: yifa.txt 不存在"
+          # 确保tv2.txt存在
+          if [ ! -f "tv2.txt" ]; then
+            echo "❌ 错误: tv2.txt 不存在"
             exit 1
           fi
           
           # 添加文件到git
-          git add yifa.txt -f
+          git add tv2.txt -f
           
           # 检查是否有变化需要提交
           if git diff --staged --quiet; then
@@ -168,12 +168,12 @@ jobs:
           sleep 5
           
           echo "检查仓库中的文件:"
-          if [ -f "yifa.txt" ]; then
-            echo "✅ 确认: yifa.txt 存在于工作目录"
-            echo "文件位置: $(pwd)/yifa.txt"
+          if [ -f "tv2.txt" ]; then
+            echo "✅ 确认: tv2.txt 存在于工作目录"
+            echo "文件位置: $(pwd)/tv2.txt"
             echo "文件内容前5行:"
-            head -n 5 yifa.txt
+            head -n 5 tv2.txt
           else
-            echo "❌ 警告: 在目录中找不到 yifa.txt"
+            echo "❌ 警告: 在目录中找不到 tv2.txt"
             exit 1
           fi
