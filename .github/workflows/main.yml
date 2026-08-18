@@ -1,4 +1,4 @@
-name: 更新播放列表
+name: 更新live.264788.xyz列表
 
 on:
   schedule:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
       
       # 步骤2：创建并写入文件
-      - name: 2️⃣ 创建/更新 yifa.txt 文件
+      - name: 2️⃣ 创建/更新文件
         run: |
           echo "开始下载播放列表内容..."
           
@@ -33,21 +33,21 @@ jobs:
           curl -L -f "https://live.264788.xyz/sub/02Rs7gSs8uOpoqmE5q4cFvcsWdHFhI/txt" > yifa.txt
           echo "下载完成"
 
-          # ========== 第一步：先动态提取3条CHC频道（付费区块内，先提取，不要先删） ==========
+          # 动态提取3条CHC频道
           # 提取三条保存到临时文件chc.tmp
           grep -E '^(CHC|凤凰卫视)' yifa.txt > chc.tmp
 
           echo "提取到的指定频道："
           cat chc.tmp
 
-          # ========== 第二步：截断文件，删除付费,#genre#以及后面所有内容 ==========
+          # 截断文件，删除xxx以及后面所有内容
           PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | head -n1 | cut -d: -f1)
           echo $PAY_LINE
           if [ -n "$PAY_LINE" ]; then
             head -n $((PAY_LINE - 1)) yifa.txt > tmp && mv tmp yifa.txt
           fi
 
-          # ========== 新增：追加湖南分类以及湖南卫视两条链接 ==========
+          # 追加湖南分类以及对应频道
           cat >> yifa.txt <<'EOF'
           
           湖南,#genre#
@@ -59,7 +59,7 @@ jobs:
           # 浏览器UA伪装
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
           
-          # 请求api，带上浏览器UA，不落地文件，管道直接传给jq
+          # 请求api，带上浏览器UA，不落地文件，管道直接传给jq，解析json取出地址
           PLAYLIST_URL=$(curl -s -f -L --connect-timeout 15 -A "$UA" "https://mapi.ngcz.tv/api/v1/channel.php" | jq -r '.[] | select(.name=="郴州新闻频道") | .m3u8')
           
           CURL_EXIT=$?
@@ -104,15 +104,13 @@ jobs:
           # 新增资兴台
           echo "资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/"  >> yifa.txt
 
-          # ========== 第三步：追加分类头 + 把动态获取的CHC写入 ==========
+          # 追加分类头 + 把动态获取的CHC写入
           echo "" >> yifa.txt
           echo "其他,#genre#" >> yifa.txt
           cat chc.tmp >> yifa.txt
 
           # 删除临时文件
           rm -f chc.tmp tmp
-
-          # 验证文件是否成功创建
           
           # 验证文件是否成功创建
           if [ -f "yifa.txt" ]; then
