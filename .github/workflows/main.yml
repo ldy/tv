@@ -41,7 +41,8 @@ jobs:
           cat chc.tmp
 
           # ========== 第二步：截断文件，删除付费,#genre#以及后面所有内容 ==========
-          PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | cut -d: -f1)
+          PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | head -n1 | cut -d: -f1)
+          echo $PAY_LINE
           if [ -n "$PAY_LINE" ]; then
             head -n $((PAY_LINE - 1)) yifa.txt > tmp && mv tmp yifa.txt
           fi
