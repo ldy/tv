@@ -31,6 +31,7 @@ jobs:
           
           # 下载文件内容
           curl -L -f "https://live.264788.xyz/sub/02Rs7gSs8uOpoqmE5q4cFvcsWdHFhI/txt" > yifa.txt
+          echo "下载完成"
 
           # ========== 第一步：先动态提取3条CHC频道（付费区块内，先提取，不要先删） ==========
           # 提取三条保存到临时文件chc.tmp
