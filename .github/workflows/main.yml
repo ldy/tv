@@ -35,7 +35,7 @@ jobs:
 
           # ========== 第一步：先动态提取3条CHC频道（付费区块内，先提取，不要先删） ==========
           # 提取三条保存到临时文件chc.tmp
-          grep -E '^(CHC|凤凰卫视),' yifa.txt > chc.tmp
+          grep -E '^(CHC|凤凰卫视)' yifa.txt > chc.tmp
 
           echo "提取到的指定频道："
           cat chc.tmp
