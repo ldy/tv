@@ -34,13 +34,13 @@ jobs:
 
           # ========== 第一步：先动态提取3条CHC频道（付费区块内，先提取，不要先删） ==========
           # 提取三条保存到临时文件chc.tmp
-          grep -E '^(CHC家庭影院|CHC影迷电影|CHC动作电影),' yifa.txt > chc.tmp
+          grep -E '^(CHC|凤凰卫视),' yifa.txt > chc.tmp
 
-          echo "提取到的CHC频道："
+          echo "提取到的指定频道："
           cat chc.tmp
 
           # ========== 第二步：截断文件，删除付费,#genre#以及后面所有内容 ==========
-          PAY_LINE=$(grep -n '付费,#genre#' yifa.txt | cut -d: -f1)
+          PAY_LINE=$(grep -n '金鹰纪实' yifa.txt | cut -d: -f1)
           if [ -n "$PAY_LINE" ]; then
             head -n $((PAY_LINE - 1)) yifa.txt > tmp && mv tmp yifa.txt
           fi
