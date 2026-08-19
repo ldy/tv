@@ -35,7 +35,7 @@ jobs:
 
           # 修改分组名称
           sed -i 's/苏州央视,#genre#/央视,#genre#/g' tv2.txt
-          sed -i 's/省级央视,#genre#/卫视,#genre#/g' tv2.txt
+          sed -i 's/省级卫视,#genre#/卫视,#genre#/g' tv2.txt
 
           # 删除不需要频道
           sed -i '/苏州/d' tv2.txt
