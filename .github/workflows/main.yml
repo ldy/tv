@@ -53,6 +53,12 @@ jobs:
           湖南,#genre#
           湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/dWlwPTEyNy4wLjAuMSZ1aWQ9cWluZy1jbXMmbm5fdGltZXpvbmU9OCZjZG5leF9pZD1hbF9obHNfbGR2dCZ1dWlkPTliODY4NmU5ZTM2YzYwMmMmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
           湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/Y2RuZXhfaWQ9YWxfaGxzX2xkdnQmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
+          湖南都市,http://cg5.hunancatv.cn:9090/live/HNDS_8000.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072718521&srchost=172.16.22.158:8060&gid=Oyrlq7RkefEXTmSBcgj%2BDw%3D%3D
+          湖南经视,http://cg2.hunancatv.cn:9090/live/HNJS_8000.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072718506&srchost=172.16.22.158:8060&gid=6DGujALCjwQft%2BrdyOntvw%3D%3D
+          湖南公共,http://cg14.hunancatv.cn:9090/live/HNGG_8000.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072718538&srchost=172.16.22.158:8060&gid=iMEwyHQI0rAsCbA83PPnrw%3D%3D
+          湖南电影,http://cg6.hunancatv.cn:9090/live/XXDY_8000.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072718550&srchost=172.16.22.158:8060&gid=A%2F51TeCdulB%2BCY9V9h5Plg%3D%3D
+          湖南电视剧,http://cg5.hunancatv.cn:9090/live/HNDSJ_8000.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072718560&srchost=172.16.22.158:8060&gid=M14VsI7B1XaIktqTuRAM8Q%3D%3D
+          郴州新闻频道,http://cg14.hunancatv.cn:9090/live/chenzhouxw.m3u8?deviceid=866265039837531&sid=Yp6brv0MWYukAl4oJr9yrw%3D%3D&nonce=Ri1TgJg9dlAK&acl=0111&hlsSessionID=3323376781072719010&srchost=172.16.22.158:8060&gid=eoZmU0Iz2%2FrMMEKAMz9tJQ%3D%3D
           EOF
           
           # 新增郴州台
