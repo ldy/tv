@@ -134,7 +134,7 @@ CCTV17,http://www.frankgb.cn:4022/udp/239.49.8.52:9810
 湖南,#genre#
 湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/dWlwPTEyNy4wLjAuMSZ1aWQ9cWluZy1jbXMmbm5fdGltZXpvbmU9OCZjZG5leF9pZD1hbF9obHNfbGR2dCZ1dWlkPTliODY4NmU5ZTM2YzYwMmMmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
 湖南卫视,http://hlsal-ldvt.qing.mgtv.com/nn_live/nn_x64/Y2RuZXhfaWQ9YWxfaGxzX2xkdnQmZT02OTE0NjA0JnY9MSZpZD1ITldTWkdTVCZzPTcwN2RiYTc2YzJjNmJmMTQ4MmUyZGYzOWU2NWM3YWFi/HNWSZGST.m3u8
-郴州新闻频道,https://live.ngcz.tv/aczxw/20221028/live.m3u8?auth_key=1788578308-0-0-c50f218a1c7255c77217edc84627b68e
+郴州新闻频道,https://live.ngcz.tv/aczxw/20221028/live.m3u8?auth_key=1788604102-0-0-e7bf66eab88293692c37cfbdc2628d9f
 资兴电视台,https://liveplay-zx.rednet.cn/live/zixing_Tv2026.m3u8|Referer=https://wap.zixingxinwen.com/
 
 其他,#genre#
